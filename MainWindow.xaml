@@ -21,6 +21,7 @@
             Background="DarkBlue"
             Foreground="White"
             Canvas.Left="200"
-            Canvas.Top="130" />
+            Canvas.Top="130"
+            Click="Detect_client"/>
     </Canvas>
 </Window>

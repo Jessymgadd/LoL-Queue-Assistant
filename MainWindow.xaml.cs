@@ -8,7 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-
+using LoL_Queue_Assistant.Services;
 namespace LoL_Queue_Assistant;
 public partial class MainWindow : Window
 {
@@ -16,4 +16,12 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
+    private ClientDetectionService clientService = new ClientDetectionService();
+    void Detect_client(object sender, RoutedEventArgs e)
+    {
+        if (clientService.IsClientOpen())
+            MessageBox.Show("open");
+        else
+            MessageBox.Show("close");
+    }
 }
