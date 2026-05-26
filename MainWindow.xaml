@@ -6,22 +6,35 @@
         Width="600"
         ResizeMode="NoResize">
 
-    <Canvas>
-        <TextBlock
-            Text="Client : non détecté"
-            FontSize = "16"
-            TextAlignment="Center"
-            Width="600"
-            Canvas.Left="0"
-            Canvas.Top="100"/>
-        <Button
-            Content="Détecter League"
-            Width="200"
-            Height="40"
-            Background="DarkBlue"
-            Foreground="White"
-            Canvas.Left="200"
-            Canvas.Top="130"
-            Click="Detect_client"/>
-    </Canvas>
+        <Canvas>
+            <StackPanel x:Name="DisconnectedView">
+                <TextBlock
+                    Text="Client : non détecté"
+                    FontSize = "16"
+                    TextAlignment="Center"
+                    Width="600"
+                    Canvas.Left="0"
+                    Canvas.Top="100"/>
+                <Button
+                    Content="Détecter League"
+                    Width="200"
+                    Height="40"
+                    Background="DarkBlue"
+                    Foreground="White"
+                    Canvas.Left="200"
+                    Canvas.Top="130"
+                    Click="Detect_client"/>
+            </StackPanel>
+
+            <StackPanel x:Name="ConnectedView"
+                        Visibility="Collapsed">
+                <TextBlock
+                    Text="Client : connecté"
+                    FontSize = "16"
+                    TextAlignment="Center"
+                    Width="600"
+                    Canvas.Left="0"
+                    Canvas.Top="100"/>
+            </StackPanel>
+        </Canvas>
 </Window>
