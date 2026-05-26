@@ -1,0 +1,26 @@
+﻿<Window x:Class="LoL_Queue_Assistant.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="LoL Queue Assistant"
+        Height="400"
+        Width="600"
+        ResizeMode="NoResize">
+
+    <Canvas>
+        <TextBlock
+            Text="Client : non détecté"
+            FontSize = "16"
+            TextAlignment="Center"
+            Width="600"
+            Canvas.Left="0"
+            Canvas.Top="100"/>
+        <Button
+            Content="Détecter League"
+            Width="200"
+            Height="40"
+            Background="DarkBlue"
+            Foreground="White"
+            Canvas.Left="200"
+            Canvas.Top="130" />
+    </Canvas>
+</Window>
