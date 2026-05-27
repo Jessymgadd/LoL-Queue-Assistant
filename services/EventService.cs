@@ -4,6 +4,8 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace LoL_Queue_Assistant.Services
 {
@@ -11,6 +13,8 @@ namespace LoL_Queue_Assistant.Services
     {
         private ClientWebSocket socket = new();
 
+        private string password = "";
+        private string port = "";
         private string ReadLockfile()
         {
             using FileStream stream = new FileStream(@"C:\Riot Games\League of Legends\lockfile",
@@ -30,8 +34,8 @@ namespace LoL_Queue_Assistant.Services
                 return;
             string lockfile = ReadLockfile();
             string[] parts = lockfile.Split(':');
-            string port = parts[2];
-            string password = parts[3];
+            port = parts[2];
+            password = parts[3];
             string auth = Convert.ToBase64String(Encoding.UTF8.GetBytes($"riot:{password}"));
             socket.Options.SetRequestHeader("Authorization", $"Basic {auth}");
             socket.Options.RemoteCertificateValidationCallback =
@@ -41,13 +45,39 @@ namespace LoL_Queue_Assistant.Services
             await SubscribeToEvent();
             _ = Listen_event();
         }
+
+        private HttpClient CreateClient()
+        {
+            HttpClientHandler handler = new();
+
+            handler.ServerCertificateCustomValidationCallback =
+                (message, cert, chain, errors) => true;
+
+            HttpClient client = new HttpClient(handler);
+
+            string auth = Convert.ToBase64String(Encoding.UTF8.GetBytes($"riot:{password}"));
+
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Basic", auth);
+
+            return client;
+        }
         public async Task Listen_event()
         {
             byte[] buffer = new byte[8192];
 
             while (socket.State == WebSocketState.Open) {
-                WebSocketReceiveResult result = await socket.ReceiveAsync(buffer, CancellationToken.None);
+                WebSocketReceiveResult result = await socket.ReceiveAsync(
+                    buffer, CancellationToken.None);
                 string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+
+                if (message.Contains("/lol-matchmaking/v1/ready-check") &&
+                    message.Contains("\"playerResponse\":\"None\"")) {
+                    using HttpClient client = CreateClient();
+                    await client.PostAsync($"https://127.0.0.1:{port}/lol-matchmaking/v1/ready-check/accept", null);
+                }
+                System.Diagnostics.Debug.WriteLine(message);
+                System.Diagnostics.Trace.WriteLine(message);
                 File.AppendAllText("events.log", message + "\n");
             }
         }
