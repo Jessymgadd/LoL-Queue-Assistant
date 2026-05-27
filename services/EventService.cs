@@ -69,6 +69,14 @@ namespace LoL_Queue_Assistant.Services
             using HttpClient client = CreateClient();
             await client.PatchAsync($"https://127.0.0.1:{port}/lol-champ-select/v1/session/actions/0", content);
         }
+
+        private async Task Auto_Pick()
+        {
+            string json = "{\"championId\":1,\"completed\":true}";
+            StringContent content = new(json, Encoding.UTF8, "application/json");
+            using HttpClient client = CreateClient();
+            await client.PatchAsync($"https://127.0.0.1:{port}/lol-champ-select/v1/session/actions/1", content);
+        }
         public async Task Listen_event()
         {
             byte[] buffer = new byte[8192];
@@ -83,8 +91,17 @@ namespace LoL_Queue_Assistant.Services
                     using HttpClient client = CreateClient();
                     await client.PostAsync($"https://127.0.0.1:{port}/lol-matchmaking/v1/ready-check/accept", null);
                 }
-                if (message.Contains("/lol-champ-select/v1/session")) {
+
+                if (message.Contains("/lol-champ-select/v1/session") &&
+                    message.Contains("\"type\":\"ban\"") &&
+                    message.Contains("\"isInProgress\":true")) {
                     await Auto_Ban();
+                }
+
+                if (message.Contains("/lol-champ-select/v1/session") &&
+                    message.Contains("\"type\":\"pick\"") && 
+                    message.Contains("\"isInProgress\":true")) {
+                    await Auto_Pick();
                 }
                 System.Diagnostics.Debug.WriteLine(message);
                 System.Diagnostics.Trace.WriteLine(message);
