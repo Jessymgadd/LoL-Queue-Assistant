@@ -24,6 +24,8 @@
                     Canvas.Left="200"
                     Canvas.Top="130"
                     Click="Detect_client"/>
+                    <ComboBox x:Name="boxtoban" Width="200" Height="35" />
+                    <ComboBox x:Name="boxtopick" Width="200" Height="35" />
             </StackPanel>
 
             <StackPanel x:Name="ConnectedView"

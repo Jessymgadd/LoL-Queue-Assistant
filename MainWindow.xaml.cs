@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Controls;
 using LoL_Queue_Assistant.Models;
 using LoL_Queue_Assistant.Services;
 
@@ -14,6 +15,8 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        boxtoban.ItemsSource = ChampionData.champions.Select(c => c.name).ToList();
+        boxtopick.ItemsSource = ChampionData.champions.Select(c => c.name).ToList();
         Update_view();
     }
 
@@ -28,11 +31,16 @@ public partial class MainWindow : Window
         }
     }
 
+    public int Get_champion_id(ComboBox box)
+    {
+        Champion champ = ChampionData.champions[box.SelectedIndex];
+        return champ.id;
+    }
     private async void Detect_client(object sender, RoutedEventArgs e)
     {
         try {
             if (clientService.IsClientOpen()) {
-                await eventService.connect();
+                await eventService.connect(Get_champion_id(boxtoban), Get_champion_id(boxtopick));
                 state = AppState.Connected;
             } else {
                 state = AppState.Disconnected;

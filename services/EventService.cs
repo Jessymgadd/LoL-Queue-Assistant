@@ -7,16 +7,19 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
+using System.Reflection.Metadata;
+using LoL_Queue_Assistant.Models;
+using System.Linq;
 
-namespace LoL_Queue_Assistant.Services
-{
-    public class LeagueEventServices
+    namespace LoL_Queue_Assistant.Services
     {
-        private ClientWebSocket socket = new();
+        public class LeagueEventServices
+        {
+            private ClientWebSocket socket = new();
 
-        private string password = "";
-        private string port = "";
-        private string ReadLockfile()
+            private string password = "";
+            private string port = "";
+            private string ReadLockfile()
         {
             using FileStream stream = new FileStream(@"C:\Riot Games\League of Legends\lockfile",
                 FileMode.Open, FileAccess. Read, FileShare.ReadWrite);
@@ -28,7 +31,7 @@ namespace LoL_Queue_Assistant.Services
             byte[] bytes = Encoding.UTF8.GetBytes("[5, \"OnJsonApiEvent\"]");
             await socket.SendAsync(bytes, WebSocketMessageType.Text, true, CancellationToken.None);
         }
-        public async Task connect()
+        public async Task connect(int to_ban, int to_pick)
         {
             if (socket.State == WebSocketState.Open ||
                 socket.State == WebSocketState.Connecting)
@@ -44,7 +47,7 @@ namespace LoL_Queue_Assistant.Services
             Uri uri = new Uri($"wss://127.0.0.1:{port}");
             await socket.ConnectAsync(uri, CancellationToken.None);
             await SubscribeToEvent();
-            _ = Listen_event();
+            _ = Listen_event(to_ban, to_pick);
         }
 
         private HttpClient CreateClient()
@@ -62,22 +65,21 @@ namespace LoL_Queue_Assistant.Services
             return client;
         }
 
-        private async Task Auto_Ban()
+        private async Task Auto_Ban(int to_ban)
         {
-            string json = "{\"championId\":63,\"completed\":true}";
+            string json = $"{{\"championId\":{to_ban},\"completed\":true}}";
             StringContent content = new(json, Encoding.UTF8, "application/json");
             using HttpClient client = CreateClient();
             await client.PatchAsync($"https://127.0.0.1:{port}/lol-champ-select/v1/session/actions/0", content);
         }
-
-        private async Task Auto_Pick()
+        private async Task Auto_Pick(int to_pick)
         {
-            string json = "{\"championId\":1,\"completed\":true}";
+            string json = $"{{\"championId\":{to_pick},\"completed\":true}}";
             StringContent content = new(json, Encoding.UTF8, "application/json");
             using HttpClient client = CreateClient();
             await client.PatchAsync($"https://127.0.0.1:{port}/lol-champ-select/v1/session/actions/1", content);
         }
-        public async Task Listen_event()
+        public async Task Listen_event(int to_ban, int to_pick)
         {
             byte[] buffer = new byte[8192];
 
@@ -95,13 +97,13 @@ namespace LoL_Queue_Assistant.Services
                 if (message.Contains("/lol-champ-select/v1/session") &&
                     message.Contains("\"type\":\"ban\"") &&
                     message.Contains("\"isInProgress\":true")) {
-                    await Auto_Ban();
+                    await Auto_Ban(to_ban);
                 }
 
                 if (message.Contains("/lol-champ-select/v1/session") &&
                     message.Contains("\"type\":\"pick\"") && 
                     message.Contains("\"isInProgress\":true")) {
-                    await Auto_Pick();
+                    await Auto_Pick(to_pick);
                 }
                 System.Diagnostics.Debug.WriteLine(message);
                 System.Diagnostics.Trace.WriteLine(message);
